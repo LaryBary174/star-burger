@@ -68,8 +68,11 @@ def register_order(request):
         order = serializer.save()
         return Response(
             {
-                'success': 'ok',
-                'order_id': order.id
+                'id': order.id,
+                'firstname': order.firstname,
+                'lastname': order.lastname,
+                'phonenumber': str(order.phonenumber),
+                'address': order.address,
             },status=201
         )
     else:
