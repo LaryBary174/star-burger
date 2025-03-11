@@ -3,6 +3,7 @@ import json
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from .models import Product,Order,OrderItem
@@ -63,7 +64,20 @@ def product_list_api(request):
 def register_order(request):
     try:
         data = request.data
+        if 'products' not in data:
+            raise ValidationError(
+                {
+                    'products': 'Поле products обязательно к заполнению'
+                }
+            )
         print(data)
+        products = data['products']
+        if not isinstance(products, list) or not products:
+            raise ValidationError(
+                {
+                    'products': 'Поле products не может быть пустым или не списком'
+                }
+            )
         order = Order.objects.create(
             firstname=data['firstname'],
             lastname=data['lastname'],
@@ -73,16 +87,27 @@ def register_order(request):
         for product in data['products']:
             product_id = product['product']
             quantity = product['quantity']
+            if not product_id:
+                raise ValidationError(
+                    {
+                        'error': 'Продукт не найден'
+                    }
+                )
             product = Product.objects.get(id=product_id)
             OrderItem.objects.create(
                 product=product,
                 order=order,
                 quantity=quantity
             )
-    except ValueError:
+    except ValidationError as e:
         return Response({
-            'error': 'bla bla bla',
-        })
+            'error': str(e.detail),
+        },status=400)
+    except ValueError as e:
+
+        return Response({
+            'error': 'Некорректный формат данных',
+        }, status=400)
     return Response({
         'success': 'ok',
     })
