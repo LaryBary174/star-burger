@@ -6,8 +6,8 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from .models import Product,Order,OrderItem
-
+from .models import Product, Order, OrderItem
+from .serializers import OrderSerializer,OrderItemSerializer
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -60,54 +60,21 @@ def product_list_api(request):
         'indent': 4,
     })
 
+
 @api_view(['POST'])
 def register_order(request):
-    try:
-        data = request.data
-        if 'products' not in data:
-            raise ValidationError(
-                {
-                    'products': 'Поле products обязательно к заполнению'
-                }
-            )
-        print(data)
-        products = data['products']
-        if not isinstance(products, list) or not products:
-            raise ValidationError(
-                {
-                    'products': 'Поле products не может быть пустым или не списком'
-                }
-            )
-        order = Order.objects.create(
-            firstname=data['firstname'],
-            lastname=data['lastname'],
-            phonenumber=data['phonenumber'],
-            address=data['address'],
+    serializer = OrderSerializer(data=request.data)
+    if serializer.is_valid():
+        order = serializer.save()
+        return Response(
+            {
+                'success': 'ok',
+                'order_id': order.id
+            },status=201
         )
-        for product in data['products']:
-            product_id = product['product']
-            quantity = product['quantity']
-            if not product_id:
-                raise ValidationError(
-                    {
-                        'error': 'Продукт не найден'
-                    }
-                )
-            product = Product.objects.get(id=product_id)
-            OrderItem.objects.create(
-                product=product,
-                order=order,
-                quantity=quantity
-            )
-    except ValidationError as e:
-        return Response({
-            'error': str(e.detail),
-        },status=400)
-    except ValueError as e:
+    else:
+        return Response(
+            serializer.errors,
+            status=400
+        )
 
-        return Response({
-            'error': 'Некорректный формат данных',
-        }, status=400)
-    return Response({
-        'success': 'ok',
-    })
