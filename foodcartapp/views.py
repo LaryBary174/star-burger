@@ -1,13 +1,13 @@
-import json
 
+from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import ValidationError
+
 from rest_framework.response import Response
 
-from .models import Product, Order, OrderItem
-from .serializers import OrderSerializer,OrderItemSerializer
+from .models import Product
+from .serializers import OrderSerializer
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -60,7 +60,7 @@ def product_list_api(request):
         'indent': 4,
     })
 
-
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
