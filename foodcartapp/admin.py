@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
@@ -125,6 +126,15 @@ class OrderAdmin(admin.ModelAdmin):
             instance.user = request.user
             instance.save()
         formset.save_m2m()
+
+    def response_change(self, request, obj):
+        if "_save" in request.POST:
+
+            manager_orders_url = reverse('restaurateur:view_orders')
+            return HttpResponseRedirect(manager_orders_url)
+
+
+        return super().response_change(request, obj)
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
