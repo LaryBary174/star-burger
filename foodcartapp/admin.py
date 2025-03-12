@@ -106,11 +106,26 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(ProductCategory)
 class ProductAdmin(admin.ModelAdmin):
     pass
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 1
+    fields = ['product', 'quantity', 'price']
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['id', 'firstname', 'lastname', 'phonenumber', 'address',]
+    inlines = [OrderItemInline]
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for obj in formset.deleted_objects:
+            obj.delete()
+        for instance in instances:
+            instance.user = request.user
+            instance.save()
+        formset.save_m2m()
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['id', 'order', 'product', 'quantity', 'price']

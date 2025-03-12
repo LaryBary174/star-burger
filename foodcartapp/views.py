@@ -76,6 +76,7 @@ def register_order(request):
             },status=201
         )
     else:
+        print("Serializer Errors:", serializer.errors)
         return Response(
             serializer.errors,
             status=400
