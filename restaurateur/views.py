@@ -1,4 +1,5 @@
 from django import forms
+from star_burger import settings
 from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.views import View
@@ -7,8 +8,8 @@ from django.contrib.auth.decorators import user_passes_test
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
-
-
+import requests
+from geopy import distance
 from foodcartapp.models import Product, Restaurant, Order
 
 
@@ -90,17 +91,57 @@ def view_restaurants(request):
         'restaurants': Restaurant.objects.all(),
     })
 
+def fetch_coordinates(apikey, address):
+    base_url = "https://geocode-maps.yandex.ru/1.x"
+    response = requests.get(base_url, params={
+        "geocode": address,
+        "apikey": apikey,
+        "format": "json",
+    })
+    response.raise_for_status()
+    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+
+    if not found_places:
+        return None
+
+    most_relevant = found_places[0]
+    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    return lon, lat
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    order_items = Order.objects.total_sum().prefetch_related('orders__product').select_related('restaurant').exclude(status='delivered').order_by('status')
+    apikey = settings.YANDEX_API_KEY
+    order_items = (
+        Order.objects.total_sum()
+        .prefetch_related('orders__product')
+        .select_related('restaurant')
+        .exclude(status='delivered')
+        .order_by('status')
+    )
     for order in order_items:
+        client_coordinates = fetch_coordinates(apikey, order.address)
+        if client_coordinates:
+            order.lon, order.lat = client_coordinates
+        else:
+            order.lon, order.lat = None, None
         products = order.orders.values_list('product', flat=True)
-        restaurant = Restaurant.objects.filter(
+        restaurants = Restaurant.objects.filter(
             menu_items__product__in=products,
             menu_items__availability=True
         ).annotate(rest=Count('menu_items__product'))
-        order.restaurants = restaurant
+        order.restaurants = []
+        for restaurant in restaurants:
+            restaurant_coordinates = fetch_coordinates(apikey,restaurant.address)
+            if restaurant_coordinates:
+                restaurant.lon, restaurant.lat = restaurant_coordinates
+                if order.lon and order.lat:
+                    restaurant.distance = distance.distance((order.lat, order.lon), (restaurant.lat, restaurant.lon)).km
+                else:
+                    restaurant.distance = 'Ошибка определения координат'
+                order.restaurants.append(restaurant)
+
     return render(request, template_name='order_items.html', context={
         'order_items': order_items
     })
+
+
