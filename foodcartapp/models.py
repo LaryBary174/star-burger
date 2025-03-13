@@ -155,6 +155,10 @@ class Order(models.Model):
         default='unprocessed',
         db_index=True,
     )
+    comments = models.TextField(
+        'комментарии',
+        blank=True,
+    )
     objects = OrderQuerySet.as_manager()
     class Meta:
         verbose_name = 'Заказ'
