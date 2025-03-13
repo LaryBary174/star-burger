@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
@@ -92,7 +93,14 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    order_items = Order.objects.total_sum().prefetch_related('orders__product').exclude(status='delivered')
+    order_items = Order.objects.total_sum().prefetch_related('orders__product').select_related('restaurant').exclude(status='delivered').order_by('status')
+    for order in order_items:
+        products = order.orders.values_list('product', flat=True)
+        restaurant = Restaurant.objects.filter(
+            menu_items__product__in=products,
+            menu_items__availability=True
+        ).annotate(rest=Count('menu_items__product'))
+        order.restaurants = restaurant
     return render(request, template_name='order_items.html', context={
         'order_items': order_items
     })

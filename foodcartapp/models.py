@@ -130,10 +130,10 @@ class OrderQuerySet(models.QuerySet):
             total_sum=Sum(F('orders__quantity') * F('orders__price'))
         )
 ORDER_STATUS = (
-    ('unprocessed', 'необработанный'),
-    ('on kitchen', 'на кухне'),
-    ('on the way', 'в пути'),
-    ('delivered', 'доставлен')
+    ('0', 'необработанный'),
+    ('1', 'на кухне'),
+    ('2', 'в пути'),
+    ('3', 'доставлен')
 )
 PAYMENT_METHOD = (
     ('unspecified', 'не указан'),
@@ -190,6 +190,13 @@ class Order(models.Model):
         default='unspecified',
         db_index=True,
     )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='restaurants',
+        blank=True,
+        null=True,
+    )
     objects = OrderQuerySet.as_manager()
     class Meta:
         verbose_name = 'Заказ'
@@ -197,6 +204,8 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Заказ {self.id} на имя {self.firstname} по адресу {self.address}"
+
+
 
 class OrderItem(models.Model):
     product = models.ForeignKey(
