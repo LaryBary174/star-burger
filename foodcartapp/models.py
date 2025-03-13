@@ -128,15 +128,33 @@ class OrderQuerySet(models.QuerySet):
         return self.annotate(
             total_sum=Sum(F('orders__quantity') * F('orders__price'))
         )
-
+ORDER_STATUS = (
+    ('unprocessed', 'необработанный'),
+    ('on kitchen', 'на кухне'),
+    ('on the way', 'в пути'),
+    ('delivered', 'доставлен')
+)
 class Order(models.Model):
-    firstname = models.CharField('Имя',max_length=150)
-    lastname = models.CharField('Фамилия',max_length=150)
+    firstname = models.CharField(
+        'Имя',
+        max_length=150
+    )
+    lastname = models.CharField(
+        'Фамилия',
+        max_length=150
+    )
     phonenumber = PhoneNumberField(
         region='RU',
         verbose_name='номер телефона'
     )
     address = models.CharField('адрес',max_length=150)
+    status = models.CharField(
+        'статус заказа',
+        max_length=50,
+        choices=ORDER_STATUS,
+        default='unprocessed',
+        db_index=True,
+    )
     objects = OrderQuerySet.as_manager()
     class Meta:
         verbose_name = 'Заказ'
