@@ -11,7 +11,7 @@ from django.contrib.auth import views as auth_views
 import requests
 from geopy import distance
 from foodcartapp.models import Product, Restaurant, Order
-
+from Placegeo.models import Place
 
 class Login(forms.Form):
     username = forms.CharField(
@@ -108,6 +108,19 @@ def fetch_coordinates(apikey, address):
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
     return lon, lat
 
+def get_or_create_place(apikey, address):
+    place, created = Place.objects.get_or_create(address=address)
+    if place.latitude is not None and place.longitude is not None:
+        return place.longitude, place.latitude
+    else:
+        coordinates = fetch_coordinates(apikey, address)
+        if coordinates:
+            place.latitude, place.longitude = coordinates
+            place.save()
+            return coordinates
+    return None, None
+
+
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     apikey = settings.YANDEX_API_KEY
@@ -119,11 +132,7 @@ def view_orders(request):
         .order_by('status')
     )
     for order in order_items:
-        client_coordinates = fetch_coordinates(apikey, order.address)
-        if client_coordinates:
-            order.lon, order.lat = client_coordinates
-        else:
-            order.lon, order.lat = None, None
+        order.lon, order.lat = get_or_create_place(apikey, order.address)
         products = order.orders.values_list('product', flat=True)
         restaurants = Restaurant.objects.filter(
             menu_items__product__in=products,
@@ -131,14 +140,12 @@ def view_orders(request):
         ).annotate(rest=Count('menu_items__product'))
         order.restaurants = []
         for restaurant in restaurants:
-            restaurant_coordinates = fetch_coordinates(apikey,restaurant.address)
-            if restaurant_coordinates:
-                restaurant.lon, restaurant.lat = restaurant_coordinates
-                if order.lon and order.lat:
-                    restaurant.distance = distance.distance((order.lat, order.lon), (restaurant.lat, restaurant.lon)).km
-                else:
-                    restaurant.distance = 'Ошибка определения координат'
-                order.restaurants.append(restaurant)
+            restaurant.lon, restaurant.lat = get_or_create_place(apikey, restaurant.address)
+            if order.lon and order.lat:
+                restaurant.distance = distance.distance((order.lat, order.lon), (restaurant.lat, restaurant.lon)).km
+            else:
+                restaurant.distance = 'Ошибка определения координат'
+            order.restaurants.append(restaurant)
 
     return render(request, template_name='order_items.html', context={
         'order_items': order_items
