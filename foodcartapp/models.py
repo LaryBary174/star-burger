@@ -135,6 +135,12 @@ ORDER_STATUS = (
     ('on the way', 'в пути'),
     ('delivered', 'доставлен')
 )
+PAYMENT_METHOD = (
+    ('unspecified', 'не указан'),
+    ('cash', 'наличные'),
+    ('money transfer', 'денежный перевод'),
+    ('cards', 'картой')
+)
 class Order(models.Model):
     firstname = models.CharField(
         'Имя',
@@ -176,6 +182,13 @@ class Order(models.Model):
         db_index=True,
         blank=True,
         null=True,
+    )
+    payment = models.CharField(
+        'способ оплаты',
+        max_length=50,
+        choices=PAYMENT_METHOD,
+        default='unspecified',
+        db_index=True,
     )
     objects = OrderQuerySet.as_manager()
     class Meta:
