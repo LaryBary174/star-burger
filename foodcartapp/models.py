@@ -166,7 +166,7 @@ class Order(models.Model):
         'комментарии',
         blank=True,
     )
-    registrated_at = models.DateTimeField(
+    registered_at = models.DateTimeField(
         'Дата создания заказа',
         default=timezone.now,
         db_index=True,
@@ -221,7 +221,8 @@ class OrderItem(models.Model):
         verbose_name='Заказ'
     )
     quantity = models.PositiveIntegerField(
-        verbose_name='Количество'
+        verbose_name='Количество',
+        validators=[MinValueValidator(1)]
     )
 
     price = models.DecimalField(

@@ -64,21 +64,7 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
-    if serializer.is_valid():
-        order = serializer.save()
-        return Response(
-            {
-                'id': order.id,
-                'firstname': order.firstname,
-                'lastname': order.lastname,
-                'phonenumber': str(order.phonenumber),
-                'address': order.address,
-            },status=201
-        )
-    else:
-        print("Serializer Errors:", serializer.errors)
-        return Response(
-            serializer.errors,
-            status=400
-        )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=201)
 
