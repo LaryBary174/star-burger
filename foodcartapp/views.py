@@ -1,4 +1,3 @@
-
 from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
@@ -8,6 +7,7 @@ from rest_framework.response import Response
 
 from .models import Product
 from .serializers import OrderSerializer
+
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -60,6 +60,7 @@ def product_list_api(request):
         'indent': 4,
     })
 
+
 @transaction.atomic
 @api_view(['POST'])
 def register_order(request):
@@ -67,4 +68,3 @@ def register_order(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=201)
-
