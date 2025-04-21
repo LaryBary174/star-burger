@@ -189,6 +189,9 @@ echo 'Деплой успешно завершен'
 - `POST_SERVER_ITEM_ACCESS_TOKEN` - токен от Rollbar получить можно [тут](https://app.rollbar.com/)
 - `DB_URL` - для подключения к бд postgresql в формате 'postgres://<username>:<password>@<host>:<port>/<database>'
 
+## Пример
+Пример [проекта](https://dvmntest174.ru/)
+
 
 ## Цели проекта
 
