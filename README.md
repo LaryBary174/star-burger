@@ -156,14 +156,22 @@ systemctl restart star-burger.service
 systemctl reload nginx.service
 
 
-POST_SERVER_ITEM_ACCESS_TOKEN=$(grep 'POST_SERVER_ITEM_ACCESS_TOKEN' .env | cut -d '=' -f2)
+commithash=$(git log -n 1 --pretty=format:"%h")
 
-export POST_SERVER_ITEM_ACCESS_TOKEN
+commitauthor=$(git log -n 1 --pretty=format:"%an")
 
-curl https://api.rollbar.com/api/1/deploy/ \
-     -F access_token="$POST_SERVER_ITEM_ACCESS_TOKEN" \
-     -F environment="production" \
-     -F revision="$COMMIT_HASH" \
+rollbar_token=$(cat .env | grep 'POST_SERVER_ITEM_ACCESS_TOKEN' | cut -d"'" -f2)
+curl -X POST \
+     -H "X-Rollbar-Access-Token: $rollbar_token" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "environment": "production",
+           "revision": "'"$commithash"'",
+           "rollbar_name": "{rollbar_login}",
+           "local_username": "'"$commitauthor"'",
+           "status": "succeeded"
+         }' \
+     https://api.rollbar.com/api/1/deploy
 
 
 echo 'Деплой успешно завершен'
