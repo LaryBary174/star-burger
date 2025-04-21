@@ -187,7 +187,7 @@ echo 'Деплой успешно завершен'
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_API_KEY` - ключ апи Яндекса для отображения координат по адресу, получить можно [тут](https://developer.tech.yandex.ru/)
 - `POST_SERVER_ITEM_ACCESS_TOKEN` - токен от Rollbar получить можно [тут](https://app.rollbar.com/)
-- `DB_URL` - для подключения к бд postgresql в формате 'postgres://<username>:<password>@<host>:<port>/<database>'
+- `DB_URL` - для подключения к бд postgresql в формате 'postgres://username:password@host:port/database'
 
 ## Пример
 Пример [проекта](https://dvmntest174.ru/)
