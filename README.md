@@ -155,6 +155,17 @@ python3 manage.py collectstatic --noinput
 systemctl restart star-burger.service
 systemctl reload nginx.service
 
+
+POST_SERVER_ITEM_ACCESS_TOKEN=$(grep 'POST_SERVER_ITEM_ACCESS_TOKEN' .env | cut -d '=' -f2)
+
+export POST_SERVER_ITEM_ACCESS_TOKEN
+
+curl https://api.rollbar.com/api/1/deploy/ \
+     -F access_token="$POST_SERVER_ITEM_ACCESS_TOKEN" \
+     -F environment="production" \
+     -F revision="$COMMIT_HASH" \
+
+
 echo 'Деплой успешно завершен'
 
 ```
@@ -175,6 +186,9 @@ echo 'Деплой успешно завершен'
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_API_KEY` - ключ апи Яндекса для отображения координат по адресу, получить можно [тут](https://developer.tech.yandex.ru/)
+- `POST_SERVER_ITEM_ACCESS_TOKEN` - токен от Rollbar получить можно [тут](https://app.rollbar.com/)
+- `DB_URL` - для подключения к бд postgresql в формате 'postgres://<username>:<password>@<host>:<port>/<database>'
+
 
 ## Цели проекта
 
