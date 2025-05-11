@@ -142,17 +142,17 @@ set -e
 git pull
 
 
-source .venv/bin/activate
-
-pip3 install -r requirements.txt
-
 npm ci --dev
  ./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 
-python3 manage.py migrate
-python3 manage.py collectstatic --noinput
+docker-compose build
+docker-compose up -d
 
-systemctl restart star-burger.service
+docker-compose exec -T backend python manage.py migrate
+docker-compose exec -T backend python manage.py collectstatic --noinput
+
+
+
 systemctl reload nginx.service
 
 
@@ -179,6 +179,15 @@ echo 'Деплой успешно завершен'
 ```
 сделать файл исполняемым  chmod +x deploy.sh
 и запустить ./deploy.sh
+
+## Как запустить с помощью Docker
+Убедитесь, что Docker установлен.
+Запускаете docker-compose командой :
+```
+docker-compose up --build
+
+```
+
 
 ## Как запустить prod-версию сайта
 

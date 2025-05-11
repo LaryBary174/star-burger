@@ -1,0 +1,53 @@
+services:
+  backend:
+    image: star-burger_backend
+    build:
+      context: .
+      dockerfile: Dockerfile-back
+
+    ports:
+      - '8000:8000'
+
+    depends_on:
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=star_burger.settings
+
+    volumes:
+      - media:/app/media
+      - bundles:/app/bundles
+      - staticfiles:/app/staticfiles
+
+
+
+  frontend:
+    image: star-burger_frontend
+    build:
+      context: .
+      dockerfile: Dockerfile-front
+    volumes:
+      - bundles:/app/bundles
+
+
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+
+
+volumes:
+  postgres_data:
+
+  media:
+
+  staticfiles:
+
+  bundles:
+
+
