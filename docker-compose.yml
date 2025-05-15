@@ -3,7 +3,7 @@ services:
     image: star-burger_backend
     build:
       context: .
-      dockerfile: Dockerfile-back
+      dockerfile: backend/Dockerfile-back
 
     ports:
       - '8000:8000'
@@ -24,7 +24,7 @@ services:
     image: star-burger_frontend
     build:
       context: .
-      dockerfile: Dockerfile-front
+      dockerfile: frontend/Dockerfile-front
     volumes:
       - bundles:/app/bundles
 

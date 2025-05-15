@@ -17,7 +17,8 @@ DEBUG = env.bool('DEBUG', False)
 ROLLBAR_ACCESS_TOKEN = env('POST_SERVER_ITEM_ACCESS_TOKEN', 'rollbar_token')
 ROLLBAR_ENVIRONMENT = env('ROLLBAR_ENVIRONMENT', 'production')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+# ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'foodcartapp.apps.FoodcartappConfig',
     'restaurateur.apps.RestaurateurConfig',
@@ -45,7 +46,7 @@ MIDDLEWARE = [
     'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404'
 ]
 
-ROOT_URLCONF = 'star_burger.urls'
+ROOT_URLCONF = 'backend.star_burger.urls'
 
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
@@ -66,7 +67,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, "templates"),
+            os.path.join(BASE_DIR, "../../templates"),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -123,8 +124,8 @@ INTERNAL_IPS = [
 
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "assets"),
-    os.path.join(BASE_DIR, "bundles"),
+    os.path.join(BASE_DIR, "backend/../assets"),
+    os.path.join(BASE_DIR, "frontend/../../frontend/bundles"),
 ]
 
 ROLLBAR = {
